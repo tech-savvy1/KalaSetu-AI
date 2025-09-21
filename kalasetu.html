@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KalaSetu AI | Hackathon Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+            background-color: #f0f2f5;
+            background-image: radial-gradient(#d1d5db 0.5px, transparent 0.5px), radial-gradient(#d1d5db 0.5px, #f0f2f5 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+        .font-heading {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .spinner-wrapper {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4f46e5;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .recording-indicator { animation: blink 1.5s linear infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .tab { cursor: pointer; padding: 0.5rem 1rem; border-bottom: 2px solid transparent; transition: all 0.2s ease-in-out; }
+        .tab.active { border-color: #4f46e5; color: #4f46e5; font-weight: 600; }
+        
+        #toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 9999px;
+            background-color: #2c3e50;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 1000;
+        }
+        #toast.show { bottom: 30px; transform: translateX(-50%) scale(1); opacity: 1;}
+        #toast { transform: translateX(-50%) scale(0.5); opacity: 0; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="toast">Copied to clipboard!</div>
+
+    <header class="bg-white/60 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-white/20">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between">
+                <h1 class="text-3xl font-bold gradient-text">KalaSetu AI (कलासेतु)</h1>
+                <p class="text-sm text-black-500 hidden md:block">From Local Hands to Global Hearts <3 </p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Input Area -->
+            <div class="glass-panel p-6">
+                <h2 class="text-3xl font-bold mb-6 font-heading gradient-text">Bring Your Art to Life</h2>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload a clear photo of your product:</label>
+                    <div id="image-uploader-container">
+                        <div id="dropzone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.158 0a.075.075 0 10-1.5 0 .075.075 0 001.5 0z" /></svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="image-upload" class="relative cursor-pointer bg-white/0 rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                                        <span>Upload a file</span>
+                                        <input id="image-upload" type="file" class="sr-only" accept="image/*">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                            </div>
+                        </div>
+                        <div id="preview-container" class="mt-1 relative hidden">
+                            <img id="image-preview" class="rounded-lg shadow-lg w-full" alt="Image preview">
+                            <button id="remove-image-btn" class="absolute top-2 right-2 p-1.5 bg-white/70 hover:bg-white rounded-full text-gray-600 hover:text-gray-800 transition-all">
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700">Describe your product's story:</label>
+                    <div class="mt-2">
+                        <div class="flex border-b border-gray-200">
+                            <div id="voice-tab" class="tab active">Record Voice</div>
+                            <div id="text-tab" class="tab">Type Story</div>
+                        </div>
+                        <div id="voice-input-container" class="pt-4">
+                            <div class="p-4 border border-white/30 rounded-b-md bg-white/20">
+                                <div class="flex items-center justify-between flex-wrap gap-4">
+                                    <div class="flex items-center gap-3">
+                                        <button id="record-btn" class="p-3 bg-green-500 hover:bg-green-600 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform hover:scale-110"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z"></path><path fill-rule="evenodd" d="M5.5 8.5A.5.5 0 016 9v1a4 4 0 004 4h.01a4 4 0 004-4V9a.5.5 0 011 0v1a5 5 0 01-4.5 4.975V17h3a.5.5 0 010 1h-7a.5.5 0 010-1h3v-2.025A5 5 0 015 10V9a.5.5 0 01.5-.5z" clip-rule="evenodd"></path></svg></button>
+                                        <button id="stop-btn" class="p-3 bg-red-500 hover:bg-red-600 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 hidden transition-transform hover:scale-110"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a.5.5 0 01.5.5v5a.5.5 0 01-1 0v-5A.5.5 0 018 7zm4 0a.5.5 0 01.5.5v5a.5.5 0 01-1 0v-5A.5.5 0 0112 7z" clip-rule="evenodd"></path></svg></button>
+                                        <div id="recording-status" class="text-sm text-gray-600 hidden"><div class="flex items-center gap-2"><span class="w-3 h-3 bg-red-500 rounded-full recording-indicator"></span>Recording...</div></div>
+                                    </div>
+                                    <select id="language-select" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                        <option value="en-US">English (US)</option><option value="hi-IN">Hindi (India)</option><option value="bn-IN">Bengali (India)</option><option value="ta-IN">Tamil (India)</option><option value="te-IN">Telugu (India)</option>
+                                    </select>
+                                </div>
+                                <audio id="audio-playback" controls class="hidden w-full mt-4"></audio>
+                            </div>
+                        </div>
+                        <div id="text-input-container" class="pt-4 hidden">
+                            <textarea id="story-input" rows="8" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md p-2 bg-white/50" placeholder="e.g., 'This is a clay pot called 'Mitti'. I made it from river clay... The blue patterns are inspired by the peacocks...'"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="generate-btn" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-xl font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:from-gray-400 disabled:to-gray-400 transition-all duration-300 hover:scale-105 disabled:scale-100">Create Magic ✨</button>
+            </div>
+
+            <!-- Output Area -->
+            <div id="output-area" class="glass-panel p-6">
+                <h2 id="results-header" class="text-3xl font-bold mb-6 font-heading gradient-text hidden">Your Digital Showcase</h2>
+                
+                <div id="loading-container" class="text-center py-10 hidden">
+                    <div class="spinner-wrapper mx-auto"></div>
+                    <p id="loading-status" class="mt-4 text-sm text-gray-600 font-medium">Initializing...</p>
+                    <div class="mt-2 text-xs text-gray-400">This may take up to a minute.</div>
+                </div>
+
+                <div id="placeholder" class="text-center text-gray-400 py-20 hidden"><p>Your generated assets will appear here.</p></div>
+                <div id="results-container" class="space-y-6"></div>
+                <div id="error-container" class="text-center py-10 hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">Oops!</strong>
+                    <span class="block sm:inline" id="error-message">Something went wrong.</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- API Key Configuration ---
+        const API_KEY = ""; // PASTE YOUR GOOGLE CLOUD API KEY HERE
+
+        // --- DOM Elements ---
+        const imageUpload = document.getElementById('image-upload'), imagePreview = document.getElementById('image-preview'), generateBtn = document.getElementById('generate-btn'), loadingContainer = document.getElementById('loading-container'), placeholder = document.getElementById('placeholder'), resultsContainer = document.getElementById('results-container'), errorContainer = document.getElementById('error-container'), errorMessage = document.getElementById('error-message'), recordBtn = document.getElementById('record-btn'), stopBtn = document.getElementById('stop-btn'), recordingStatus = document.getElementById('recording-status'), audioPlayback = document.getElementById('audio-playback'), voiceTab = document.getElementById('voice-tab'), textTab = document.getElementById('text-tab'), voiceInputContainer = document.getElementById('voice-input-container'), textInputContainer = document.getElementById('text-input-container'), storyInput = document.getElementById('story-input'), languageSelect = document.getElementById('language-select'), loadingStatus = document.getElementById('loading-status'), toast = document.getElementById('toast');
+        const dropzone = document.getElementById('dropzone');
+        const previewContainer = document.getElementById('preview-container');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const resultsHeader = document.getElementById('results-header');
+
+        let imageBase64 = null, audioBase64 = null, mediaRecorder, audioChunks = [], activeTab = 'voice';
+
+        // --- Event Listeners ---
+        imageUpload.addEventListener('change', e => {
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = e => { 
+                imagePreview.src = e.target.result; 
+                imageBase64 = e.target.result.split(',')[1]; 
+                dropzone.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeImageBtn.addEventListener('click', () => {
+            imageBase64 = null;
+            imageUpload.value = ''; 
+            previewContainer.classList.add('hidden');
+            dropzone.classList.remove('hidden');
+        });
+
+        voiceTab.addEventListener('click', () => switchTab('voice'));
+        textTab.addEventListener('click', () => switchTab('text'));
+        recordBtn.addEventListener('click', startRecording);
+        stopBtn.addEventListener('click', stopRecording);
+        generateBtn.addEventListener('click', generateAssets);
+
+        function switchTab(tab) {
+            activeTab = tab;
+            voiceTab.classList.toggle('active', tab === 'voice'); textTab.classList.toggle('active', tab !== 'voice');
+            voiceInputContainer.classList.toggle('hidden', tab !== 'voice'); textInputContainer.classList.toggle('hidden', tab === 'voice');
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start(); recordBtn.classList.add('hidden'); stopBtn.classList.remove('hidden'); recordingStatus.classList.remove('hidden'); audioPlayback.classList.add('hidden'); audioBase64 = null; audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); const audioUrl = URL.createObjectURL(audioBlob);
+                    audioPlayback.src = audioUrl; audioPlayback.classList.remove('hidden'); const reader = new FileReader(); reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => { audioBase64 = reader.result.split(',')[1]; };
+                    stopBtn.classList.add('hidden'); recordBtn.classList.remove('hidden'); recordingStatus.classList.add('hidden');
+                };
+            } catch (err) { console.error("Mic error:", err); showError("Could not access microphone."); }
+        }
+
+        function stopRecording() { if(mediaRecorder) mediaRecorder.stop(); }
+
+        async function generateAssets() {
+            if (!API_KEY) { 
+                showError("API_KEY is not set in the script. Please add your Google Cloud API key."); 
+                return; 
+            }
+            const storyText = storyInput.value.trim();
+            if (!imageBase64 || (activeTab === 'voice' && !audioBase64) || (activeTab === 'text' && !storyText)) {
+                showError("Please upload an image and provide a story (record or type)."); return;
+            } setLoading(true); document.getElementById('output-area').scrollIntoView();
+            try {
+                let transcribedStory = storyText;
+                if (activeTab === 'voice') {
+                    updateLoaderStatus("Transcribing Audio...");
+                    transcribedStory = await callSpeechToText(API_KEY, audioBase64);
+                }
+                updateLoaderStatus("Generating Marketing Text...");
+                const textGenerationResponse = await callGemini(API_KEY, transcribedStory, imageBase64);
+                updateLoaderStatus("Creating Lifestyle Photos...");
+                const imageUrls = await generateLifestyleImages(API_KEY, textGenerationResponse.imagePrompts, imageBase64);
+                displayResults(textGenerationResponse, imageUrls);
+            } catch (err) { console.error("Error:", err); showError(err.message || "An unknown error occurred."); } 
+            finally { setLoading(false); }
+        }
+        
+        async function callSpeechToText(apiKey, audioData) {
+            const languageCode = languageSelect.value;
+            const STT_API_URL = `https://speech.googleapis.com/v1p1beta1/speech:recognize?key=${apiKey}`;
+            const body = { config: { encoding: 'WEBM_OPUS', sampleRateHertz: 48000, languageCode: languageCode, enableAutomaticPunctuation: true }, audio: { content: audioData } };
+            const res = await fetch(STT_API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            if (!res.ok) { 
+                const err = await res.json();
+                if (err.error && err.error.message.includes('API has not been used')) {
+                    throw new Error("Please enable the 'Cloud Speech-to-Text API' in your Google Cloud project.");
+                }
+                throw new Error(`Speech-to-Text failed: ${err.error.message}`); 
+            }
+            const data = await res.json();
+            if (!data.results?.length) { throw new Error("Could not understand the audio. Please record again clearly."); }
+            return data.results.map(r => r.alternatives[0].transcript).join('\n');
+        }
+
+        async function callGemini(apiKey, story, imageBase64) {
+            const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+            // CHANGED: Updated the prompt to ask for 4 images
+            const prompt = `You are an expert e-commerce and social media marketer for local artisans. The artisan's story is: "${story}". Generate a JSON object with: "productTitle" (short, catchy), "productStory" (150 words), "socialMediaCaptions" (array of 2, with hashtags), "imagePrompts" (array of 4 detailed lifestyle prompts for an image model). Output ONLY the raw JSON object.`;
+            const body = { contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }] }] };
+            const res = await fetch(GEMINI_API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            if (!res.ok) { 
+                const err = await res.json(); 
+                if (err.error && err.error.message.includes('API has not been used')) {
+                    throw new Error("Please enable the 'Gemini API' in your Google Cloud project.");
+                }
+                throw new Error(`Gemini API failed: ${err.error.message}`); 
+            }
+            const data = await res.json();
+            const rawText = data.candidates[0].content.parts[0].text;
+            const jsonString = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
+            return JSON.parse(jsonString);
+        }
+
+        async function generateLifestyleImages(apiKey, prompts, originalImageBase64) {
+            const IMAGE_GEN_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+            const urls = [];
+            for (const prompt of prompts) {
+                const fullPrompt = `Task: Photo-realistic product placement.
+                Instructions: Take the primary product from the user-provided image and seamlessly integrate it into a new scene described as: "${prompt}".
+                Maintain the product's original appearance, lighting, and shadows to match the new background. The final image should look like a professional photograph.`;
+
+                const body = {
+                    contents: [{ 
+                        parts: [
+                            { text: fullPrompt },
+                            { inlineData: { mimeType: "image/jpeg", data: originalImageBase64 } }
+                        ] 
+                    }],
+                    generationConfig: { responseModalities: ['IMAGE'] }
+                };
+                const res = await fetch(IMAGE_GEN_API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+                if (res.ok) { 
+                    const data = await res.json();
+                    const base64Data = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                    if(base64Data) {
+                        urls.push(`data:image/png;base64,${base64Data}`);
+                    } else {
+                        console.error("Image Gen Error: No image data in response for prompt:", prompt, data);
+                        urls.push("https://placehold.co/600x400/ccc/FFFFFF?text=Image+Failed");
+                    }
+                } else { 
+                    const err = await res.json();
+                    if (err.error && err.error.message.includes('API has not been used')) {
+                        throw new Error("Please ensure the 'Gemini API' is enabled in your Google Cloud project.");
+                    }
+                    console.error("Image Gen API Error for prompt:", prompt, err);
+                    urls.push("https://placehold.co/600x400/ccc/FFFFFF?text=Image+Failed");
+                }
+            }
+            return urls;
+        }
+
+
+        function setLoading(isLoading) {
+            generateBtn.disabled = isLoading; 
+            loadingContainer.classList.toggle('hidden', !isLoading);
+            placeholder.classList.toggle('hidden', true); 
+            if (isLoading) {
+                resultsContainer.innerHTML = '';
+                resultsHeader.classList.add('hidden');
+            }
+            errorContainer.classList.add('hidden');
+        }
+        function updateLoaderStatus(message) { loadingStatus.textContent = message; }
+        function showError(msg) { 
+            errorMessage.textContent = msg; 
+            errorContainer.classList.remove('hidden');
+            resultsHeader.classList.add('hidden');
+        }
+        function showToast(message) {
+            toast.textContent = message; toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+        function copyToClipboard(elementId, type) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => showToast(`${type} copied!`));
+        }
+        function downloadImage(url, filename) {
+            const a = document.createElement('a'); a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        function displayResults(textData, imageUrls) {
+            resultsHeader.classList.remove('hidden');
+
+            const copyIcon = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+            const downloadIcon = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>`;
+            resultsContainer.innerHTML = `
+                <div class="p-4 border rounded-lg bg-white/50 border-white/30"><div class="flex justify-between items-center"><h3 class="text-lg font-semibold text-gray-800">Product Title</h3><button onclick="copyToClipboard('product-title', 'Title')" class="flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-800 p-2 rounded-md hover:bg-indigo-50">${copyIcon} Copy</button></div><p id="product-title" class="mt-1 text-gray-700">${textData.productTitle}</p></div>
+                <div class="p-4 border rounded-lg bg-white/50 border-white/30"><div class="flex justify-between items-center"><h3 class="text-lg font-semibold text-gray-800">Product Story</h3><button onclick="copyToClipboard('product-story', 'Story')" class="flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-800 p-2 rounded-md hover:bg-indigo-50">${copyIcon} Copy</button></div><p id="product-story" class="mt-1 text-gray-700 whitespace-pre-wrap">${textData.productStory}</p></div>
+                <div class="p-4 border rounded-lg bg-white/50 border-white/30"><h3 class="text-lg font-semibold text-gray-800">Social Media Captions</h3><ul class="mt-2 space-y-3">${textData.socialMediaCaptions.map((c, i) => `<li class="border-t border-gray-200/50 pt-3"><div class="flex justify-between items-start gap-4"><p id="caption-${i}" class="text-gray-700 text-sm">${c}</p><button onclick="copyToClipboard('caption-${i}', 'Caption')" class="flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-800 flex-shrink-0 p-2 rounded-md hover:bg-indigo-50">${copyIcon} Copy</button></div></li>`).join('')}</ul></div>
+                <div><h3 class="text-lg font-semibold text-gray-800 mb-2">AI-Generated Lifestyle Photos</h3><div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${imageUrls.map((url, i) => `<div class="relative group rounded-lg overflow-hidden shadow-lg"><img src="${url}" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center"><button onclick="downloadImage('${url}', 'kalasetu-image-${i+1}.png')" class="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-60 px-4 py-2 rounded-full text-sm font-medium">${downloadIcon} Download</button></div></div>`).join('')}</div></div>`;
+        }
+    </script>
+</body>
+</html>
+
