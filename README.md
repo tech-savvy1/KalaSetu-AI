@@ -7,6 +7,8 @@ It runs entirely in the browser and enables artisans to create engaging product 
 
 ## 📸 Screenshot
 ![App Screenshot](./kalasetu1.png)
+![App Screenshot](./kalasetu2.png)
+
 
 ---
 
@@ -20,6 +22,12 @@ KalaSetu AI allows an artisan to:
   - A compelling **Product Story**  
   - Ready-to-use **Social Media Captions**  
   - AI-generated **lifestyle photos** showcasing the product  
+
+---
+
+## 🌐 Live Link! 
+
+https://kalasetuai.netlify.app//kalasetu.html
 
 ---
 
